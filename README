@@ -1,0 +1,45 @@
+narcdec - Nokia .Arc Decoder / Decompressor 
+-------------------------------------------
+
+Some code path ideas and data on the format of .Arc
+files ruthlessly copied from NbuExplorer 
+(sourceforge.net/projects/nbuexplorer) code.
+
+narcdec is licensed under GPLv3 (as is NbuExplorer).
+
+This is a little fastly coded tool because I didnt
+want to install a windows OS (or use anything .NET related)
+to decode the Backup.Arc file from my Nokia 6630.
+
+Note: only tested with a file from a Nokia 6630, but I 
+guess it could work with ones from other Symbian S60 2nd Ed
+era (or so) phones. I purposely didnt implement formats
+I didnt have a decode example for, so I'll accept patches
+if you can test them.
+
+NOTE: Currently it doesnt (for my example file) understand
+the 10-byte header (TODO), and there is a 6-byte footer
+saying "RM-104" (???).
+
+Current analysis on the header:
+00 xx xx 00 00 ?? ?? ?? 00 03
+xx xx = number of files in archive (little endian 16-bit)
+?? = changes, no idea what this is (chksum or date?) 
+others = constant (still no idea)
+
+And for you who wont bother to read the source;
+the files are encoded like this (effectively in an array):
+name	length	explanation
+---------------------------
+len	1	length of unicode (UTF-16) filename in bytes
+fn	len	filename (eg. C:\Nokia\Images\wtf.jpg but UTF-16)
+meta	10	unknown metadata (you can have this hexdumped)
+luncmp	4	uint32_t uncompressed length
+lcmp	4	uint32_t compressed length
+cdata	lcmp	zlib stream compressed file content
+
+Note: Even 0 length files are "compressed" to 8 bytes... 
+we dont bother to "uncompress" that data ;p
+
+--
+Urja Rannikko <urjaman@gmail.com>
